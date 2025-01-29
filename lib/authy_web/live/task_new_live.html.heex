@@ -1,0 +1,57 @@
+<h1>Tasks</h1>
+
+<.table id="tasks" rows={@tasks}>
+  <:col :let={t} label="Task">{t.name}</:col>
+  <:col :let={t} label="Description">{t.description}</:col>
+  <:col :let={task} label="Status">
+    <%= if task.status == "COMPLETED" do  %>
+      COMPLETE
+    <%else%>
+      NOT COMPLETED
+    <%end%>
+  </:col>
+  
+  <:action :let={task}>
+    <div class="actions">
+   <%= if task.status == "COMPLETED" do %>
+  <.link
+    phx-click={JS.push("undo", value: %{id: task.id}) |> hide("##{task.id}")} 
+    data-confirm="Are you sure you want to undo this task?" 
+    class="button-link delete-link">
+    UNDO
+  </.link>
+<% else %>
+<%= if task.status == "NOT COMPLETED" do %>
+  <.link
+    phx-click={JS.push("complete", value: %{id: task.id}) |> hide("##{task.id}")} 
+    data-confirm="Are you sure you have completed the task?" 
+    class="button-link delete-link">
+    COMPLETE
+  </.link>
+<% end %>
+<% end %>
+
+      <.link patch={"/todo/#{task.id}/edit"} class="button-link">Edit</.link>
+      <.link
+      phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{task.id}")}
+      data-confirm="Are you sure, you want to delete this task?"
+       class="button-link delete-link">
+      Delete
+     </.link>
+    </div> 
+  </:action>
+</.table>
+
+<.link navigate="/todo/new" class="add-task-link">Add New Task</.link>
+
+<.modal :if={@live_action in [:new, :edit]} id="task-modal" show on_cancel={JS.patch(~p"/todo")}>
+  <.live_component
+    module={AuthyWeb.TaskLive.FormComponent}
+    id={@task.id || :new}
+    title={@page_title}
+    action={@live_action}
+    task={@task}
+    patch={~p"/todo"}
+    user={@current_user}
+  />
+</.modal>
