@@ -11,6 +11,11 @@ config :authy,
   ecto_repos: [Authy.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+  #Guardian
+  # config :authy, Authy.Guardian,
+  # issuer: "authy",
+  # secret_key: "wN+0z8tdJKZ6mKqoIBPnkEjgXpdiGiiFns0b13qUO+QDz5qMXhdWrB6uAzYaDxk+"
+
 # Configures the endpoint
 config :authy, AuthyWeb.Endpoint,
   url: [host: "localhost"],

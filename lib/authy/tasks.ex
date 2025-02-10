@@ -4,14 +4,19 @@ defmodule Authy.Tasks do
   alias Authy.Task
   # alias Authy.Accounts.User
 
+  #user id required
   def create_task(attrs \\%{}, user_id) do
     # Merge the user_id into the attributes
     attrs = Map.put(attrs, "user_id", user_id)
+    # IO.inspect(attrs, label: "checking whats in the attrs variable")
     %Task{}
     |> Task.changeset(attrs)
     |> Repo.insert()
   end
 
+
+
+  #user id required
   def list_tasks(user_id) do
     Repo.all(from t in Task, where: t.status not in ["DELETED"] and t.user_id == ^user_id )
   end
@@ -21,6 +26,12 @@ defmodule Authy.Tasks do
     |> where([t], t.status not in ["DELETED"] and t.id == ^task_id)
     |> Repo.one!()
   end
+
+  # def list_task!(task_id) do
+  #   Task
+  #   |> where([t], t.status not in ["DELETED"] and t.user_id == ^task_id)
+  #   |> Repo.one!()
+  # end
 
   def update_task(%Task{} = task, attrs) do
     task

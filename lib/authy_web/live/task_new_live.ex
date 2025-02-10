@@ -2,28 +2,15 @@ defmodule AuthyWeb.TaskNewLive do
   use AuthyWeb, :live_view
   alias Authy.Tasks
   alias Authy.Task
-  alias Authy.Accounts
+  # alias Authy.Accounts
 
-  # on_mount {TodoAppWeb.UserAuth, :ensure_authenticated}
-
+  #on_mount {TodoAppWeb.UserAuth, :ensure_authenticated}
   @impl true
   def mount(_params, %{"user_id" => user_id}, socket) do
-    # current_user = Accounts.get_user!(user_id)
-
-    # case current_user.user_type do
-    #   "USER" ->
         task = Tasks.list_tasks(user_id)
         {:ok, assign(socket,user_id: user_id, tasks: task)}
-
-    #   "ADMIN" ->
-    #     socket =
-    #       socket
-    #       |> put_flash(:error, "You do not have permission to view user dashboard")
-    #       |> redirect(to: ~p"/admin")
-    #       {:ok, socket}
-    # end
-
   end
+
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -53,6 +40,11 @@ defmodule AuthyWeb.TaskNewLive do
     {:noreply, assign(socket, :tasks, task)}
   end
 
+  def handle_info(:clear_flash, socket) do
+    IO.puts("Received :clear_flash message") # Debugging
+    {:noreply, clear_flash(socket)}
+  end
+
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     user_id = socket.assigns.current_user.id
@@ -77,31 +69,34 @@ defmodule AuthyWeb.TaskNewLive do
 
   def handle_event("complete", %{"id" => id}, socket) do
     query = Tasks.list_task!(id)
+    user_id = socket.assigns.current_user.id
+    # tasky = Tasks.task_completed(query)
+    #   IO.inspect(tasky, label: "checking the task completed")
 
     case Tasks.task_completed(query) do
       {:ok, _task} ->
-        task = Tasks.list_tasks(id)
+        task = Tasks.list_tasks(user_id)
         socket =
           socket
           |> assign(tasks: task)
           |> put_flash(:info, "Task Is Marked as Completed")
-        {:noreply, socket}
+          {:noreply, socket}
 
       {:error, reason} ->
         socket =
           socket
           |> put_flash(:error, "Failed to complete task: #{reason}")
-        {:noreply, socket}
+          {:noreply, socket}
     end
   end
 
 
   def handle_event("undo", %{"id" => id}, socket) do
     query = Tasks.list_task!(id)
-
+    user_id = socket.assigns.current_user.id
     case Tasks.task_undone(query) do
       {:ok, _task} ->
-        task = Tasks.list_tasks(id)
+        task = Tasks.list_tasks(user_id)
         socket =
           socket
           |> assign(tasks: task)

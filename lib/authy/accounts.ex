@@ -2,7 +2,6 @@ defmodule Authy.Accounts do
   @moduledoc """
   The Accounts context.
   """
-
   import Ecto.Query, warn: false
   alias Authy.Repo
 
@@ -25,6 +24,36 @@ defmodule Authy.Accounts do
   def get_user_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
   end
+
+  def get_user_by_id(id) do
+    Repo.get_by(User, id: id)
+  end
+
+  def authenticate_user(email, password) do
+    user = get_user_by_email(email)
+
+    if user && Pbkdf2.verify_pass(password, user.hashed_password) do
+      {:ok, user}
+    else
+      Pbkdf2.no_user_verify()
+      {:error, "Invalid email or password"}
+    end
+  end
+
+  # def authenticate_api_user(email, password) do
+  #   case get_user_by_email(email) do
+  #     %User{} = user ->
+  #       if Pbkdf2.verify_pass(password, user.hashed_password) do
+  #         {:ok, user, Authy.Auth.Token.generate(user)}
+  #       else
+  #         {:error, "Invalid credentials"}
+  #       end
+
+  #     _->
+  #       {:error, "Invalid credentials"}
+  #   end
+  # end
+
 
   @doc """
   Gets a user by email and password.

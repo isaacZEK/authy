@@ -14,6 +14,18 @@ defmodule AuthyWeb.Router do
     plug :fetch_current_user
   end
 
+  # pipeline :api_auth do
+
+  #   plug Guardian.Plug.Pipeline,
+  #     module: AuthyWeb.Guardian,
+  #     error_handler: AuthyWebAuthErrorHandler
+
+  #     plug Guardian.Plug.VerifyHeader, scheme: "Bearer"
+  #     plug Guardian.Plug.EnsureAuthenticated
+  #     # plug.Guardian.Plug.LoadResource
+
+  # end
+
   pipeline :role_redirect do
     plug AuthyWeb.Plugs.RoleRedirect
   end
@@ -22,10 +34,12 @@ defmodule AuthyWeb.Router do
     plug :accepts, ["json"]
   end
 
+
   scope "/", AuthyWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
+    live "/", UserLoginLive, :new
   end
 
   # Other scopes may use custom stacks.
@@ -66,15 +80,36 @@ defmodule AuthyWeb.Router do
     post "/users/log_in", UserSessionController, :create
   end
 
+  scope "/api", AuthyWeb.API do
+    pipe_through [:api, AuthyWeb.Plugs.AuthPlug]
 
-  # scope "/admin", TodoWeb do
-  #   pipe_through :browser
-  #   pipe_through :require_authenticated_user
+    post "/login", AuthController, :login
+    get "/me", AuthContolller, :me
 
-  #   get "/", AdminController, :index
-  #   get "/:id/delete", AdminController, :delete
-  #   get "/:id/tasks", AdminController, :view_user_tasks
-  #   # get "/users/:id/tasks", TaskController, :tasks
+  end
+
+
+
+
+  scope "/api", AuthyWeb do
+    pipe_through [:api]
+    post "/task/create", ApiController, :create
+    get "/task/showall/", ApiController, :index
+    get "/task/show/:id", ApiController, :show
+    patch "/task/edit/:id", ApiController, :update
+    delete "/task/delete/:id", ApiController, :delete
+
+    post "/taskuser/login", ApiController, :login
+    post "/taskuser/create", ApiController, :create_user_task
+  end
+
+  # scope "/auth/api", AuthyWeb do
+  #   pipe_through :api
+  #   post "/login", ApiAuthController, :login
+  #   scope "/" do
+  #     pipe_through :api_auth
+  #     get "/profile", ApiUserController, :profile
+  #   end
   # end
 
 

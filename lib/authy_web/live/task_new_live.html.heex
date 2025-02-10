@@ -1,48 +1,69 @@
-<h1>Tasks</h1>
+<h1 class="text-3xl font-bold text-center my-6">Tasks</h1>
 
-<.table id="tasks" rows={@tasks}>
-  <:col :let={t} label="Task">{t.name}</:col>
-  <:col :let={t} label="Description">{t.description}</:col>
-  <:col :let={task} label="Status">
-    <%= if task.status == "COMPLETED" do  %>
-      COMPLETE
-    <%else%>
-      NOT COMPLETED
-    <%end%>
-  </:col>
-  
-  <:action :let={task}>
-    <div class="actions">
-   <%= if task.status == "COMPLETED" do %>
-  <.link
-    phx-click={JS.push("undo", value: %{id: task.id}) |> hide("##{task.id}")} 
-    data-confirm="Are you sure you want to undo this task?" 
-    class="button-link delete-link">
-    UNDO
+<div class="flex justify-center">
+  <table id="tasks" class="min-w-full bg-white rounded-lg overflow-hidden">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <%= for task <- @tasks do %>
+        <tr id={"#{task.id}"} class="hover:bg-gray-50 transition duration-150 ease-in-out">
+          <td class="px-6 py-4 text-sm text-gray-900"><%= task.name %></td>
+          <td class="px-6 py-4 text-sm text-gray-900"><%= task.description %></td>
+          <td class="px-6 py-4 text-sm text-gray-900">
+            <%= if task.status == "COMPLETED" do %>
+              <span class="px-2 py-1 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">COMPLETE</span>
+            <% else %>
+              <span class="px-2 py-1 text-xs font-semibold leading-5 text-red-800 bg-red-100 rounded-full">NOT COMPLETED</span>
+            <% end %>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-900">
+            <div class="actions flex space-x-2">
+              <%= if task.status == "COMPLETED" do %>
+                <.link
+                  phx-click={JS.push("undo", value: %{id: task.id}) |> hide("##{task.id}")}
+                  data-confirm="Are you sure you want to undo this task?"
+                  class="button-link delete-link px-4 py-2 text-sm font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transition duration-150 ease-in-out">
+                  UNDO
+                </.link>
+              <% else %>
+                <%= if task.status == "NOT COMPLETED" do %>
+                  <.link
+                    phx-click={JS.push("complete", value: %{id: task.id}) |> hide("##{task.id}")}
+                    data-confirm="Are you sure you have completed the task?"
+                    class="button-link delete-link px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-600 transition duration-150 ease-in-out">
+                    COMPLETE
+                  </.link>
+                <% end %>
+              <% end %>
+
+              <.link patch={"/todo/#{task.id}/edit"} class="button-link px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-150 ease-in-out">Edit</.link>
+              <.link
+                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{task.id}")}
+                data-confirm="Are you sure, you want to delete this task?"
+                class="button-link delete-link px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition duration-150 ease-in-out">
+                Delete
+              </.link>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="flex justify-center mt-6">
+  <.link navigate="/todo/new"
+    class="add-task-link inline-flex items-center justify-center px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-lg hover:from-indigo-600 hover:to-purple-600 hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105">
+    ➕ Add New Task
   </.link>
-<% else %>
-<%= if task.status == "NOT COMPLETED" do %>
-  <.link
-    phx-click={JS.push("complete", value: %{id: task.id}) |> hide("##{task.id}")} 
-    data-confirm="Are you sure you have completed the task?" 
-    class="button-link delete-link">
-    COMPLETE
-  </.link>
-<% end %>
-<% end %>
+</div>
 
-      <.link patch={"/todo/#{task.id}/edit"} class="button-link">Edit</.link>
-      <.link
-      phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{task.id}")}
-      data-confirm="Are you sure, you want to delete this task?"
-       class="button-link delete-link">
-      Delete
-     </.link>
-    </div> 
-  </:action>
-</.table>
-
-<.link navigate="/todo/new" class="add-task-link">Add New Task</.link>
 
 <.modal :if={@live_action in [:new, :edit]} id="task-modal" show on_cancel={JS.patch(~p"/todo")}>
   <.live_component

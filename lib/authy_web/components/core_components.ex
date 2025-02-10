@@ -50,7 +50,12 @@ defmodule AuthyWeb.CoreComponents do
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="bg-transparent backdrop-blur-sm fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
+
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -66,16 +71,19 @@ defmodule AuthyWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              class="shadow-zinc-700/10 ring-blue-500/50 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
                   phx-click={JS.exec("data-cancel", to: "##{@id}")}
                   type="button"
-                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
+                  class="-m-3 flex-none p-3 text-red-500 opacity-80"
                   aria-label={gettext("close")}
                 >
-                  <.icon name="hero-x-mark-solid" class="h-5 w-5" />
+                  <!-- Heroicon "X" -->
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
               <div id={"#{@id}-content"}>
@@ -105,11 +113,13 @@ defmodule AuthyWeb.CoreComponents do
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
 
+
   def flash(assigns) do
     assigns = assign_new(assigns, :id, fn -> "flash-#{assigns.kind}" end)
 
     ~H"""
     <div
+      phx-hook="AutoHideFlash"
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
@@ -133,6 +143,8 @@ defmodule AuthyWeb.CoreComponents do
     </div>
     """
   end
+
+
 
   @doc """
   Shows the flash group with standard titles and content.
@@ -569,6 +581,8 @@ defmodule AuthyWeb.CoreComponents do
     </div>
     """
   end
+
+
 
   @doc """
   Renders a [Heroicon](https://heroicons.com).
